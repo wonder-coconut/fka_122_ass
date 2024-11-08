@@ -9,6 +9,8 @@ gcc C2_task2.c -o C2 -I${loc}/include -L${loc}/lib -Wl,-rpath,${loc}/lib -lgsl -
 
 Execute:
 ./C2
+
+Input parameters: <array dimension>
 */
 
 int main(int argc, char *argv[])

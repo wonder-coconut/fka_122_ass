@@ -12,6 +12,7 @@ gcc C2_task1.c linalg.c -o C2 -I${loc}/include -L${loc}/lib -Wl,-rpath,${loc}/li
 Execute using :
 ./C2
 
+Input parameters: <array dimension>
 */
 double scalar_driver(int);
 double distance_driver(int);

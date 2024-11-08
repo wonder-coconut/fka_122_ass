@@ -1,9 +1,9 @@
 CC ?= gcc # c-compiler
-CFLAGS = # compiler flags such as -O3 -W
-LIBS = # libraries such as -lm -lgsl -lgslcblas
+CFLAGS = -Wl # compiler flags such as -O3 -W
+LIBS = -lgsl -lgslcblas # libraries such as -lm -lgsl -lgslcblas
 
-OBJECTS = add.o main.o # object files to produce
-PROGRAM = program # name of executable to be built
+OBJECTS = C2_task2.o # object files to produce
+PROGRAM = C2 # name of executable to be built
 
 LOCAL = ${HOME}/.local
 CFLAGS += \
