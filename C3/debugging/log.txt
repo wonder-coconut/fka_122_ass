@@ -1,0 +1,3 @@
+21  :   fixed fill array segment from '<=' to '<='
+40  :   initial condition for 'n = 0' => 'n = 1'
+74  :   implicit type casting from int to double for valid addition

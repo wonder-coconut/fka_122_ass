@@ -1,0 +1,3 @@
+in vector.c:
+    14 : elementwise_addition;  changed one of the 'v1[i]' to 'v2[i]'
+    40 : dot_product;   changed 'result=' to 'result+='
