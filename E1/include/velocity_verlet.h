@@ -1,3 +1,5 @@
+#pragma once
+
 void calculate_acceleration(double *accelerations, double *positions, double *masses, double kappa);
 
 double calculate_potential_energy(double *positions, double kappa);

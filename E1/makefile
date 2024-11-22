@@ -25,7 +25,9 @@ LIB = \
 
 OBJ = \
     obj/tools.o \
-	obj/velocity_verlet.o
+	obj/velocity_verlet.o \
+	obj/fput.o \
+	obj/transform.o
 
 MAIN = \
 	obj/main.o
