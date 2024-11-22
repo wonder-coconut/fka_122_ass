@@ -2,7 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 data = open('../op_text/fput_energies.txt').read().split('\n')
-timestep = float(data.pop(0))
+
+params = data.pop(0).split('\t')
+timestep = float(params[0])
+alpha = float(params[1])
+
 data.pop()
 
 for i in range(len(data)):
@@ -22,6 +26,6 @@ plt.plot(x,data[:,4],label = 'Normal mode #5')
 plt.xlabel('Time (ps)')
 plt.ylabel('Energy (a.u.)')
 plt.legend(loc = 'center right')
-plt.title('Harmonic FPUT Normal Mode Energy Distribution ')
+plt.title(f'FPUT Normal Mode Energy Distribution\n alpha = {alpha}')
 
-plt.savefig('../op_figs/fput_lin_energy.png')
+plt.savefig(f'../op_figs/fput_lin_energy_{alpha}.png')

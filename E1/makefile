@@ -27,7 +27,7 @@ OBJ = \
     obj/tools.o \
 	obj/velocity_verlet.o \
 	obj/fput.o \
-	obj/transform.o
+	obj/transform_harmonic.o
 
 MAIN = \
 	obj/main.o

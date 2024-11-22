@@ -4,7 +4,7 @@
 
 #include "tools.h"
 #include "velocity_verlet.h"
-#include "transform.h"
+#include "transform_harmonic.h"
 #include "fput.h"
 
 
@@ -132,13 +132,22 @@ void part2()
     int t_max = 25000;
     float i_lim = t_max/timestep;
 
-    fprintf(fptr,"%f\n",timestep);
+    float alpha = 0;
+
+    fprintf(fptr,"%f\t%f\n",timestep,alpha);
 
     for(i = 0; i < i_lim; i++)
     {
-        velocity_verlet_one_step_fput(accelerations, positions, velocities, 0, timestep, N);
+        
+        velocity_verlet_one_step_fput(accelerations, positions, velocities, alpha, timestep, N);
         calculate_normal_mode_energies(E_k,positions,transform_mat,velocities,N);
-        fprintf(fptr,"%f\t%f\t%f\t%f\t%f\n",E_k[0],E_k[1],E_k[2],E_k[3],E_k[4]);
+        if(t_max >= 1E5 && i % 1000 == 0)
+        {
+            printf("%d\t%.2f\n",i,i_lim);
+            fprintf(fptr,"%f\t%f\t%f\t%f\t%f\n",E_k[0],E_k[1],E_k[2],E_k[3],E_k[4]);
+        }
+        else if(t_max <= 1E5)
+            fprintf(fptr,"%f\t%f\t%f\t%f\t%f\n",E_k[0],E_k[1],E_k[2],E_k[3],E_k[4]);
     }
 
     destroy_2D_array(transform_mat);
