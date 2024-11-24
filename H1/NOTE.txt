@@ -1,0 +1,5 @@
+temporary fix:
+run this before executing ./H1
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/wonder_coconut/.local/lib/                                                                                                  [12:06:32]
+export LD_LIBRARY_PATH
