@@ -6,6 +6,8 @@ def quad_model(x,a,b,c):
     return a*x*x + b*x + c
 
 data = open("../op_text/pot_e_dist.txt","r").read().split('\n')
+op_write = open("../op_text/lp_0k.txt","w")
+
 data.pop()
 for i in range(len(data)):
     data[i] = data[i].split('\t')
@@ -27,6 +29,8 @@ y = quad_model(x,a_opt,b_opt,c_opt)
 y_min = min(y)
 x_min = x[np.argmin(y)]
 
+op_write.write(str(np.power(x_min,1/3)))
+
 plt.figure(figsize = (10,7))
 
 plt.axvline(x_min,color='red')
@@ -41,3 +45,6 @@ plt.xlabel(r"Volume ($Å^3$)")
 plt.ylabel(r"Energy per unit cell volume (eV/$Å^3$)")
 plt.legend(loc = 'upper left')
 plt.savefig('../op_fig/pot_e_lp_dist.png')
+
+
+op_write.close()
