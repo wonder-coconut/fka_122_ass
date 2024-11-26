@@ -12,19 +12,20 @@
 #include "velocity_verlet.h"
 #include "kinetic_energy.h"
 #include "equilibration.h"
+#include "pressure.h"
 
 void task3(int argc, char *argv[])
 {
     //equilibration constants
-    //double bulk_mod_al_GPa = 76.2;
+    double bulk_mod_al_GPa = 76.2;
     //Jacobs, P. W. M., et al. "Bulk and surface properties of metallic aluminium: DFT simulations." Comput. Model. New Technol 6 (2002): 7-28.
-    double T_eq_K = 500;
-    //double P_eq_GPa = 1E-4;
+    double T_eq_K = 773;
+    double P_eq_GPa = 1E-4;
 
-    //double GPa_in_asu = 6.2415076486555486E-09;
-    //double bulk_mod_al_asu = bulk_mod_al_GPa * GPa_in_asu;
-    //double k_T = 1/bulk_mod_al_asu;
-    //double P_eq_asu = P_eq_GPa * GPa_in_asu;
+    double GPa_in_asu = 6.2415076486555486E-03;
+    double bulk_mod_al_asu = bulk_mod_al_GPa * GPa_in_asu;
+    double k_T = 1/bulk_mod_al_asu;
+    double P_eq_asu = P_eq_GPa * GPa_in_asu;
 
     //lattice parameters init
     int N = 4;
@@ -34,9 +35,8 @@ void task3(int argc, char *argv[])
     int asu_scale = 9649;
     double al_asu = al_mass_num/asu_scale;
     
-    //input lp from file
+    //lattice parameter
     double lp = 0;
-    //fscanf(f_in,"%lf",&lp);
 
     double **positions = create_2D_array(n_atoms, 3); //atomic properties storage
     double **velocities = create_2D_array(n_atoms, 3);
@@ -60,26 +60,37 @@ void task3(int argc, char *argv[])
     read_xyz(f_lattice, symbol, positions, velocities, &lp);
 
     //simulation setup
+
+    //output file
+    FILE *f_out = fopen("op_text/equilibration.txt","w");
+    double virial = 0;
+
     double kin_e = 0;
     double T_inst = 0;
+    
+    double L = N * lp;
+    double V = L*L*L;
+    double P_inst = 0;
 
     double timestep = atof(argv[2]);
     double time_constant_T = 250 * timestep;
-    //double time_constant_P = 250 * timestep;
-    double t_max = 10;
+    double time_constant_P = 250 * timestep;
+    double t_max = 2;
     double max_iterations = t_max/timestep;
+
 
     for(i = 0; i < max_iterations; i++)
     {
         kin_e = get_kinetic_energy_al(velocities, al_asu, n_atoms);
         T_inst = get_temperature(kin_e);
 
-
-
+        virial = get_virial_AL(positions, N*lp, n_atoms);
+        P_inst = get_pressure_al(V, kin_e, positions, virial, n_atoms);
+        
         velocity_update(velocities, timestep, time_constant_T, T_inst, T_eq_K, n_atoms);
-
-        printf("%f\n",T_inst);
-        //pressure_update(positions, k_T, timestep, time_constant_P, P_inst, P_eq_asu, n_atoms);
+        fprintf(f_out,"%lf\t%lf\t",T_inst,T_eq_K);
+        pressure_update(positions, k_T, timestep, time_constant_P, P_inst, P_eq_asu, n_atoms);
+        fprintf(f_out,"%lf\t%lf\n",P_inst*1000,P_eq_asu*1000);
     }
 
     //free dynamic array

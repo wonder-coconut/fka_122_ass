@@ -35,7 +35,8 @@ OBJ = \
       obj/run.o \
 	  obj/velocity_verlet.o \
 	  obj/kinetic_energy.o \
-	  obj/equilibration.o
+	  obj/equilibration.o \
+	  obj/pressure.o
 
 OBJ_LIB = \
 	obj_nep/nep.o \

@@ -28,7 +28,6 @@ void pressure_update(double **positions, double k_T, double timestep, double tim
 {
     double alpha = calc_alpha_P(timestep, k_T, time_constant_P, P_inst, P_eq);
     double alpha_scale = pow(alpha, 1.0/3);
-
     for(int i = 0; i < n_atoms; i++)
     {
         positions[i][0] = alpha_scale * positions[i][0];

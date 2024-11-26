@@ -26,7 +26,6 @@ for i in range(len(data)):
     energies[3].append((np.sum(data[:i,3]))/(i+1))
     energies[4].append((np.sum(data[:i,4]))/(i+1))
 
-plt.yscale('log')
 plt.plot(x,energies[0])
 plt.plot(x,energies[1])
 plt.plot(x,energies[2])
@@ -38,4 +37,4 @@ plt.ylabel('Energy (a.u.)')
 
 plt.title(f'Energy evolution\nalpha = {alpha}')
 
-plt.savefig(f'../op_figs/anharmonic_equipartition_{alpha}_res.png')
+plt.savefig(f'../op_figs/anharmonic_equipartition_{alpha}_test.png')
