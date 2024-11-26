@@ -1,5 +1,12 @@
 #include <math.h>
 
+double get_temperature(double kin_e)
+{
+    double kb_in_ev = 8.618011058E-05;
+    double T = kin_e * 2 / (3 * 256 * kb_in_ev);
+    return T;
+}
+
 double get_kinetic_energy_al(double **velocities, double al_asu, int n_atoms)
 {
     double e_kin = 0;

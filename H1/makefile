@@ -33,7 +33,9 @@ OBJ = \
       obj/lattice.o \
       obj/potential.o \
       obj/run.o \
-	  obj/velocity_verlet.o
+	  obj/velocity_verlet.o \
+	  obj/kinetic_energy.o \
+	  obj/equilibration.o
 
 OBJ_LIB = \
 	obj_nep/nep.o \

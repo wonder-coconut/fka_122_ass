@@ -15,7 +15,7 @@ for i in range(len(data)):
 
 data = np.array(data)
 
-x = np.arange(0,len(data)) * timestep
+x = np.arange(0,len(data)) * timestep * 1000
 
 energies = [[] for item in range(data.shape[1])]
 
@@ -38,4 +38,4 @@ plt.ylabel('Energy (a.u.)')
 
 plt.title(f'Energy evolution\nalpha = {alpha}')
 
-plt.savefig(f'../op_figs/anharmonic_equipartition_{alpha}.png')
+plt.savefig(f'../op_figs/anharmonic_equipartition_{alpha}_res.png')

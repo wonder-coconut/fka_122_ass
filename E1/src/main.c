@@ -96,7 +96,7 @@ void part1()
     fclose(fptr2);
 }
 
-void part2()
+void part2(int argc, char *argv[])
 {
     const unsigned int N = 32; //number of particles
     double E_0 = N; //initial energy
@@ -129,13 +129,12 @@ void part2()
 
     //sim setup
     float timestep = 0.1;
-    int t_max = 25000;
+    int t_max = 1E6;
     float i_lim = t_max/timestep;
 
-    float alpha = 0;
+    float alpha = atof(argv[2]);
 
     fprintf(fptr,"%f\t%f\n",timestep,alpha);
-
     for(i = 0; i < i_lim; i++)
     {
         
@@ -169,7 +168,7 @@ int main(int argc, char *argv[])
     if(choice == 1)
         part1();
     else if(choice == 2)
-        part2();
+        part2(argc, argv);
 
     return 0;
 }
