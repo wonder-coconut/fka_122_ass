@@ -44,6 +44,8 @@ plt.scatter(x_min,y_min, label=f'Å = {np.power(x_min,1/3)}')
 plt.xlabel(r"Volume ($Å^3$)")
 plt.ylabel(r"Energy per unit cell volume (eV/$Å^3$)")
 plt.legend(loc = 'upper left')
+plt.title("Potential Energy vs Lattice Constant")
+
 plt.savefig('../op_fig/pot_e_lp_dist.png')
 
 

@@ -1,5 +1,7 @@
 #pragma once
 
+void calculate(double *potential, double *virial, double **force,
+           double **position, double cell_length, int nbr_atoms);
 /* ****************************************************************************
  * Function that calculates the forces on all atoms in units of [eV/Å]. the
  * forces are stored in f which should be a matrix of size N x 3, where N is

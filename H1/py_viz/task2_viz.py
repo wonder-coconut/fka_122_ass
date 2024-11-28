@@ -17,6 +17,7 @@ joule_in_ev = 6.242e+18
 kb_in_ev = kb * joule_in_ev
 
 temp = data[:,1] * 2/(3 * 256 * kb_in_ev)
+temp_avg = temp.mean()
 
 fig,axes = plt.subplots(2,1,figsize = (10,10))
 
@@ -27,7 +28,9 @@ axes[0].set_ylabel('Energy (eV)')
 axes[0].legend(loc = 'center right')
 
 axes[1].plot(x,temp)
+axes[1].axhline(temp_avg,label=f'Average Temp = {temp_avg}',color = 'red')
 axes[1].set_ylim(600,1000)
+axes[1].legend(loc='upper right')
 axes[1].set_ylabel('Temperature (K)')
 
 axes[1].set_xlabel('Time (ps)')
