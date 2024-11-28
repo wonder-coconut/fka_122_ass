@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = open("../op_text/equilibration.txt","r").read().split('\n')
+data = open("../op_text/equilibration_t_p.txt","r").read().split('\n')
 
 data.pop()
 
@@ -22,8 +22,8 @@ for i in range(len(data)):
     data[i] = res
 
 data = np.array(data)
-p_eq/=1000
-data[:,1]/=1000
+p_eq/=1000000
+data[:,1]/=1000000
 
 x = np.arange(len(data))
 

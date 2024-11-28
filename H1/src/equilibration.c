@@ -24,10 +24,11 @@ void velocity_update(double **velocities, double timestep, double time_constant_
     }
 }
 
-void pressure_update(double **positions, double k_T, double timestep, double time_constant_P, double P_inst, double P_eq, double n_atoms)
+void pressure_update(double **positions, double k_T, double timestep, double time_constant_P, double P_inst, double P_eq, double n_atoms, double *lp)
 {
     double alpha = calc_alpha_P(timestep, k_T, time_constant_P, P_inst, P_eq);
     double alpha_scale = pow(alpha, 1.0/3);
+    *lp = alpha * *lp;
     for(int i = 0; i < n_atoms; i++)
     {
         positions[i][0] = alpha_scale * positions[i][0];

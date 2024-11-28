@@ -19,7 +19,8 @@ void task3(int argc, char *argv[])
     //equilibration constants
     double bulk_mod_al_GPa = 76.2;
     //Jacobs, P. W. M., et al. "Bulk and surface properties of metallic aluminium: DFT simulations." Comput. Model. New Technol 6 (2002): 7-28.
-    double T_eq_K = 773;
+    double T_eq_K_1 = 1173;
+    double T_eq_K = 973;
     double P_eq_GPa = 1E-4;
 
     double GPa_in_asu = 6.2415076486555486E-03;
@@ -40,7 +41,7 @@ void task3(int argc, char *argv[])
 
     double **positions = create_2D_array(n_atoms, 3); //atomic properties storage
     double **velocities = create_2D_array(n_atoms, 3);
-
+    double **forces = create_2D_array(n_atoms, 3);
     int i,j;
 
     //init to 0
@@ -50,6 +51,7 @@ void task3(int argc, char *argv[])
         {
             positions[i][j] = 0;
             velocities[i][j] = 0;
+            forces[i][j] = 0;
         }
     }
 
@@ -62,7 +64,9 @@ void task3(int argc, char *argv[])
     //simulation setup
 
     //output file
-    FILE *f_out = fopen("op_text/equilibration.txt","w");
+    FILE *f_out = fopen("op_text/equilibration_t_p.txt","w");
+    FILE *f_pos = fopen("op_text/equilibration_pos.txt","w");
+    
     double virial = 0;
 
     double kin_e = 0;
@@ -75,12 +79,47 @@ void task3(int argc, char *argv[])
     double timestep = atof(argv[2]);
     double time_constant_T = 250 * timestep;
     double time_constant_P = 250 * timestep;
-    double t_max = 2;
+    double t_max = 30;
     double max_iterations = t_max/timestep;
 
 
-    for(i = 0; i < max_iterations; i++)
+    for(i = 0; i < max_iterations/2; i++)
     {
+        //update dimensions
+        L = N * lp;
+        V = L * L * L;
+
+        if(i % 1000 == 0)
+            printf("%d\n",i);
+
+        velocity_verlet_one_step_lattice(forces, velocities, positions, timestep, N, lp, n_atoms,al_asu);
+        
+        kin_e = get_kinetic_energy_al(velocities, al_asu, n_atoms);
+        T_inst = get_temperature(kin_e);
+
+        virial = get_virial_AL(positions, N*lp, n_atoms);
+        P_inst = get_pressure_al(V, kin_e, positions, virial, n_atoms);
+        
+        velocity_update(velocities, timestep, time_constant_T, T_inst, T_eq_K_1, n_atoms);
+        fprintf(f_out,"%lf\t%lf\t",T_inst,T_eq_K_1);
+
+        pressure_update(positions, k_T, timestep, time_constant_P, P_inst, P_eq_asu, n_atoms, &lp);
+        //scaled by 10^6 for printing purposes
+        fprintf(f_out,"%lf\t%lf\n",P_inst*1000000,P_eq_asu*1000000);
+        
+        for(j = 0; j < 5; j++)
+            fprintf(f_pos,"%f\t%f\t%f\t",positions[j][0],positions[j][1],positions[j][2]);
+        fprintf(f_pos,"\n");
+
+    }
+
+    for(i = 0; i < max_iterations/2; i++)
+    {
+        if(i % 1000 == 0)
+            printf("%d\n",i);
+        
+        velocity_verlet_one_step_lattice(forces, velocities, positions, timestep, N, lp, n_atoms,al_asu);
+        
         kin_e = get_kinetic_energy_al(velocities, al_asu, n_atoms);
         T_inst = get_temperature(kin_e);
 
@@ -89,13 +128,22 @@ void task3(int argc, char *argv[])
         
         velocity_update(velocities, timestep, time_constant_T, T_inst, T_eq_K, n_atoms);
         fprintf(f_out,"%lf\t%lf\t",T_inst,T_eq_K);
-        pressure_update(positions, k_T, timestep, time_constant_P, P_inst, P_eq_asu, n_atoms);
-        fprintf(f_out,"%lf\t%lf\n",P_inst*1000,P_eq_asu*1000);
+
+        pressure_update(positions, k_T, timestep, time_constant_P, P_inst, P_eq_asu, n_atoms, &lp);
+        fprintf(f_out,"%lf\t%lf\n",P_inst*1000000,P_eq_asu*1000000);
+        
+        for(j = 0; j < 5; j++)
+            fprintf(f_pos,"%f\t%f\t%f\t",positions[j][0],positions[j][1],positions[j][2]);
+        fprintf(f_pos,"\n");
+
     }
+
+    //write_xyz(f_pos, "Al", positions, velocities, N * lp, n_atoms);
 
     //free dynamic array
     destroy_2D_array(positions,n_atoms);
     destroy_2D_array(velocities,n_atoms);
+    destroy_2D_array(forces, n_atoms);
 }
 
 void task2(int argc, char *argv[])
