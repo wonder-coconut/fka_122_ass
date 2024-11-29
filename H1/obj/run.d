@@ -54,4 +54,4 @@ obj/run.o: src/run.c /home/wonder_coconut/.local/include/gsl/gsl_rng.h \
  /home/wonder_coconut/.local/include/gsl/gsl_matrix_char.h \
  include/lattice.h include/potential.h include/tools.h \
  include/velocity_verlet.h include/kinetic_energy.h \
- include/equilibration.h
+ include/equilibration.h include/pressure.h

@@ -14,6 +14,88 @@
 #include "equilibration.h"
 #include "pressure.h"
 
+void eqb_sim(int argc, char *argv[])
+{
+
+    //lattice parameters init
+    int N = 4;
+    int fcc_n_atoms = 4;
+    int n_atoms = N*N*N*fcc_n_atoms;
+    double al_mass_num = 26.981539;
+    int asu_scale = 9649;
+    double al_asu = al_mass_num/asu_scale;
+
+    double lp = 0;
+
+    double **positions = create_2D_array(n_atoms, 3); //atomic properties storage
+    double **velocities = create_2D_array(n_atoms, 3);
+    double **forces = create_2D_array(n_atoms, 3);
+
+    int i,j;
+
+    //init to 0
+    for(i = 0; i < n_atoms; i++)
+    {
+        for(j = 0; j < 3; j++)
+        {
+            positions[i][j] = 0;
+            velocities[i][j] = 0;
+            forces[i][j] = 0;
+        }
+    }
+    //read lattice of eqb
+    FILE* f_lattice = fopen("op_text/lattice_eqb_t4.xyz","r");
+    char symbol[256];
+
+    //get "random" velocities and positions from previous sim
+    read_xyz(f_lattice, symbol, positions, velocities, &lp);
+
+    //output file
+    FILE *f_out = fopen("op_text/post_eqb_sim_t_p_t4.txt","w");
+
+    double virial = 0;
+    double w_sum = 0;
+
+    double kin_e = 0;
+    double T_inst = 0;
+    double T_sum = 0;
+    
+    double L = N * lp;
+    double V = L*L*L;
+
+    double timestep = atof(argv[2]);
+    double t_max = 15;
+    double max_iterations = t_max/timestep;
+
+    //run sim after eqb, turning off scaling
+    for(i = 0; i < max_iterations; i++)
+    {
+
+        velocity_verlet_one_step_lattice(forces, velocities, positions, timestep, N, lp, n_atoms,al_asu);
+
+        kin_e = get_kinetic_energy_al(velocities, al_asu, n_atoms);
+        T_inst = get_temperature(kin_e);
+        T_sum += T_inst;
+
+        virial = get_virial_AL(positions, N*lp, n_atoms);
+        w_sum += virial;
+
+        if(i%250 == 0)
+            fprintf(f_out,"%f\t%f\n",T_inst, virial);
+    }
+
+    double T_avg = T_sum/max_iterations;
+    double W_avg = w_sum/max_iterations;
+    double kb_in_ev = 8.618011058E-05;
+    double P_avg = (n_atoms * kb_in_ev * T_avg + W_avg)/V;
+
+    printf("Avg temp : %f\t Avg Press : %.15f\t Avg Virial : %f\n", T_avg,P_avg,W_avg);
+
+    destroy_2D_array(positions,3);
+    destroy_2D_array(velocities,3);
+    destroy_2D_array(forces,3);
+}
+
 void task4(int argc, char *argv[])
 {
     //equilibration constants
@@ -443,5 +525,7 @@ run(
         task3(argc, argv);
     else if(choice == 4)
         task4(argc, argv);
+    else if(choice == 5)
+        eqb_sim(argc, argv);
     return 0;
 }
