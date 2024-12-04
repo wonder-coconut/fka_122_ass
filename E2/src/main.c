@@ -8,6 +8,61 @@
 #include "result_t_temp.h"
 #include "result_t.h"
 #include "mc_triple_integral.h"
+#include "inefficiency.h"
+#include "tools.h"
+
+void part4()
+{
+    FILE *mc_read = fopen("MC.txt","r");
+    int n = 1E6;
+
+    double *data = (double *)malloc(n * sizeof(double));
+    
+    int i;
+    for(i = 0; i < n ; i++)
+        fscanf(mc_read,"%lf\n",&data[i]);
+
+    //double f_mean = average(data,n);
+    //
+    //for(i = 0; i < n ; i++)
+    //    data[i] -= f_mean;
+    
+    for(i = 1; i < n; i++)
+        if(i % 1000 == 0)
+            printf("%f\n",autocorrelation(data,n,i));
+
+    free(data);
+}
+
+void part3()
+{
+    FILE *mc_read = fopen("MC.txt","r");
+    int n = 1E6;
+
+    double *data = (double *)malloc(n * sizeof(double));
+    
+    int i;
+    for(i = 0; i < n ; i++)
+        fscanf(mc_read,"%lf\n",&data[i]);
+
+    double diff = 1E-6;
+    double hist, temp;
+    hist = temp = 0;
+
+    for(int b = 2; b < n/2; b++)
+    {
+        temp = block_average(data, n, b);
+        printf("%f\n",temp);
+        if(fabs(temp - hist) < diff)
+        {
+            printf("diff:\t%f\n",fabs(temp-hist));
+            break;
+        }
+        hist = temp;
+    }
+
+    free(data);
+}
 
 void part2()
 {
@@ -93,6 +148,10 @@ int main(int argc, char *argv[])
         part1();
     else if(choice == 2)
         part2();
+    else if(choice == 3)
+        part3();
+    else if(choice == 4)
+        part4();
 
     return 0;
 }

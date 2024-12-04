@@ -15,7 +15,8 @@ CFLAGS = \
 CFLAGS_OPT = \
 	-O2 \
 	-march=native \
-	-fno-omit-frame-pointer
+	-fno-omit-frame-pointer \
+	-fsanitize=address
 
 LIB = \
     -lm \
@@ -26,7 +27,8 @@ OBJ = \
     obj/tools.o \
 	obj/mc_uniform.o \
 	obj/mc_importance.o \
-	obj/mc_triple_integral.o
+	obj/mc_triple_integral.o \
+	obj/inefficiency.o
 
 MAIN = \
 	obj/main.o
