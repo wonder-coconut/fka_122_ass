@@ -19,6 +19,10 @@
 void task4(int argc, char *argv[])
 {
     FILE *out = fopen("op_text/eqb_evol_t4.txt","w");
+    FILE *pos = fopen("op_text/pos_evol_t4.txt","w");
+    FILE *lp_evol = fopen("op_text/lp_evol_t4.txt","w");
+    FILE *op_lattice = fopen("op_text/t4_lattice.xyz","w");
+
     FILE *ip_lattice = fopen("op_text/energy_evol_lattice.xyz","r");
     
     double **positions = create_2D_array(N_ATOMS, 3);
@@ -45,47 +49,99 @@ void task4(int argc, char *argv[])
     double timestep = atof(argv[2]);
     double max_time = atof(argv[3]);
 
-    double T_eq_temp = 1173.15;
-    double T_eq = 973.15;
+    double T_eq_temp = 1173.15; //initial equilibration for state change to liquid
+    double T_eq = 973.15; //true equilibration
     double T_const = 500 * timestep;
     double P_eq = 1E-4 * GPA_SCALE;
     double P_const = 500 * timestep;
 
     double lp = lp_0k; //initial
 
-    //eqb1
+    fprintf(out,"%f\n",timestep);
+    fprintf(pos,"%f\n",timestep);
+    fprintf(lp_evol,"%f\n",timestep);
+
+    //eqb initial
     for(double time = 0; time < max_time; time += timestep)
     {
+        //loop counter
+        if((int)(time/timestep) % 1000 == 0)
+            printf("%f\n",time);
+
         vv_one_step(forces, velocities, positions, NULL, &virial, timestep, N*lp, N_ATOMS, AL_MASS);
         kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
 
         eqb_temp_1_step(velocities, T_eq_temp, T_const, timestep, kin_e, AL_MASS, N_ATOMS);
         eqb_press_1_step(velocities, virial, P_eq, P_const, timestep, kin_e, AL_MASS, N_ATOMS, &lp);
 
-        fprintf(out,"%f\t%f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //sim data output
+        //temp and pressure
+        fprintf(out,"%f\t%.15f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //lattice parameter
+        fprintf(lp_evol,"%f\n",lp);
+
+        //particle positions
+        if((int)(time/timestep) % 100 == 0)
+        {
+            for(i = 0; i < 5; i++)
+                fprintf(pos,"%f\t%f\t%f\t",positions[i][0],positions[i][1],positions[i][2]);
+            fprintf(pos,"\n");
+        }
     }
 
-    //eqb2
+    //eqb true
     for(double time = 0; time < max_time; time += timestep)
     {
+        if((int)(time/timestep) % 1000 == 0)
+            printf("%f\n",time);
+
         vv_one_step(forces, velocities, positions, NULL, &virial, timestep, N*lp, N_ATOMS, AL_MASS);
         kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
 
         eqb_temp_1_step(velocities, T_eq, T_const, timestep, kin_e, AL_MASS, N_ATOMS);
         eqb_press_1_step(velocities, virial, P_eq, P_const, timestep, kin_e, AL_MASS, N_ATOMS, &lp);
 
-        fprintf(out,"%f\t%f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //sim data output
+        //temp and pressure
+        fprintf(out,"%f\t%.15f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //lattice parameter
+        fprintf(lp_evol,"%f\n",lp);
+
+        //particle positions
+        if((int)(time/timestep) % 100 == 0)
+        {
+            for(i = 0; i < 5; i++)
+                fprintf(pos,"%f\t%f\t%f\t",positions[i][0],positions[i][1],positions[i][2]);
+            fprintf(pos,"\n");
+        }
     }
 
     //production run
-    for(double time = 0; time < max_time * 2; time += timestep)
+    for(double time = 0; time < max_time * 5; time += timestep)
     {
-
+        if((int)(time/timestep) % 1000 == 0)
+            printf("%f\n",time);
+        
         vv_one_step(forces, velocities, positions, NULL, &virial, timestep, N*lp, N_ATOMS, AL_MASS);
         kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
 
-        fprintf(out,"%f\t%f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //sim data output
+        //temp and pressure
+        fprintf(out,"%f\t%.15f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //lattice parameter
+        fprintf(lp_evol,"%f\n",lp);
+
+        //particle positions
+        if((int)(time/timestep) % 100 == 0)
+        {
+            for(i = 0; i < 5; i++)
+                fprintf(pos,"%f\t%f\t%f\t",positions[i][0],positions[i][1],positions[i][2]);
+            fprintf(pos,"\n");
+        }
     }
+
+    //lattice save
+    write_xyz(op_lattice,symbol, positions, velocities, lp, N_ATOMS);
 
     destroy_2D_array(positions, N_ATOMS);
     destroy_2D_array(velocities, N_ATOMS);
@@ -95,7 +151,11 @@ void task4(int argc, char *argv[])
 
 void task3(int argc, char *argv[])
 {
-    FILE *out = fopen("op_text/eqb_evol.txt","w");
+    FILE *out = fopen("op_text/eqb_evol_t3.txt","w");
+    FILE *pos = fopen("op_text/pos_evol_t3.txt","w");
+    FILE *lp_evol = fopen("op_text/lp_evol_t3.txt","w");
+    FILE *op_lattice = fopen("op_text/t3_lattice.xyz","w");
+
     FILE *ip_lattice = fopen("op_text/energy_evol_lattice.xyz","r");
     
     double **positions = create_2D_array(N_ATOMS, 3);
@@ -107,6 +167,7 @@ void task3(int argc, char *argv[])
     
     double lp_0k = 0;
 
+    //read lattice properties
     char symbol[256];
     read_xyz(ip_lattice, symbol, positions, velocities, &lp_0k);
 
@@ -129,26 +190,68 @@ void task3(int argc, char *argv[])
 
     double lp = lp_0k; //initial
 
+    fprintf(out,"%f\n",timestep);
+    fprintf(pos,"%f\n",timestep);
+    fprintf(lp_evol,"%f\n",timestep);
+
+    //equilibration run
     for(double time = 0; time < max_time; time += timestep)
     {
+        //loop counter
+        if((int)(time/timestep) % 1000 == 0)
+            printf("%f\n",time);
+
+        //velocity verlet
         vv_one_step(forces, velocities, positions, NULL, &virial, timestep, N*lp, N_ATOMS, AL_MASS);
         kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
 
+        //temp and pressure equilibration
         eqb_temp_1_step(velocities, T_eq, T_const, timestep, kin_e, AL_MASS, N_ATOMS);
         eqb_press_1_step(velocities, virial, P_eq, P_const, timestep, kin_e, AL_MASS, N_ATOMS, &lp);
+        
+        //sim data output
+        //temp and pressure
+        fprintf(out,"%f\t%.15f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //lattice parameter
+        fprintf(lp_evol,"%f\n",lp);
 
-        fprintf(out,"%f\t%f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //particle positions
+        if((int)(time/timestep) % 100 == 0)
+        {
+            for(i = 0; i < 5; i++)
+                fprintf(pos,"%f\t%f\t%f\t",positions[i][0],positions[i][1],positions[i][2]);
+            fprintf(pos,"\n");
+        }
     }
 
     //production run
     for(double time = 0; time < max_time * 2; time += timestep)
     {
-
+        //loop counter
+        if((int)(time/timestep) % 1000 == 0)
+            printf("%f\n",time);
+     
+        //vv without eqb
         vv_one_step(forces, velocities, positions, NULL, &virial, timestep, N*lp, N_ATOMS, AL_MASS);
         kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
 
-        fprintf(out,"%f\t%f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //sim data output
+        //temp and pressure
+        fprintf(out,"%f\t%.15f\n",inst_temp_calc(kin_e, N_ATOMS), inst_press_calc(kin_e, virial, N*N*N*lp*lp*lp));
+        //lattice parameter
+        fprintf(lp_evol,"%f\n",lp);
+
+        //particle positions
+        if((int)(time/timestep) % 100 == 0)
+        {
+            for(i = 0; i < 5; i++)
+                fprintf(pos,"%f\t%f\t%f\t",positions[i][0],positions[i][1],positions[i][2]);
+            fprintf(pos,"\n");
+        }
     }
+
+    //lattice save
+    write_xyz(op_lattice,symbol, positions, velocities, lp, N_ATOMS);
 
     destroy_2D_array(positions, N_ATOMS);
     destroy_2D_array(velocities, N_ATOMS);
@@ -197,7 +300,9 @@ void task2(int argc, char *argv[], gsl_rng *r)
 
     for(double time = 0; time < max_time; time += timestep)
     {
+        //velocity verlet one step, with potential energy calc
         vv_one_step(forces, velocities, positions, &pot_e, NULL, timestep, N*lp_0k, N_ATOMS, AL_MASS);
+        //kinetic energy calc
         kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
         
         fprintf(out,"%f\t%f\n",kin_e,pot_e);
@@ -225,9 +330,9 @@ void task1()
 
     for(lp = lp_ll; lp < lp_ul; lp += lp_step)
     {
-        init_fcc(positions , N , lp);
+        init_fcc(positions , N , lp); // lattice gen
         pot_e = get_energy_AL(positions , N * lp , N_ATOMS);
-        fprintf(pot_e_lp, "%f\t%f\n", lp, pot_e);
+        fprintf(pot_e_lp, "%f\t%f\n", lp, pot_e); //potential energy calc
     }
 
     destroy_2D_array(positions, N_ATOMS);
@@ -258,13 +363,13 @@ run(
     //task split
     int choice = atoi(argv[1]);
     if(choice == 1)
-        task1();
+        task1(); //lattice init
     else if(choice == 2)
-        task2(argc, argv, r);
+        task2(argc, argv, r); //velocity verlet
     else if(choice == 3)
-        task3(argc, argv);
+        task3(argc, argv); //solid state eqb
     else if(choice == 4)
-        task4(argc, argv);
+        task4(argc, argv); //liquid state eqb
 
     gsl_rng_free(r);
 
