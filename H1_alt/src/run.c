@@ -18,10 +18,10 @@
 
 void task4(int argc, char *argv[])
 {
-    FILE *out = fopen("op_text/eqb_evol_t4.txt","w");
-    FILE *pos = fopen("op_text/pos_evol_t4.txt","w");
-    FILE *lp_evol = fopen("op_text/lp_evol_t4.txt","w");
-    FILE *op_lattice = fopen("op_text/t4_lattice.xyz","w");
+    FILE *out = fopen("op_text/eqb_evol_t4_temp.txt","w");
+    FILE *pos = fopen("op_text/pos_evol_t4_temp.txt","w");
+    FILE *lp_evol = fopen("op_text/lp_evol_t4_temp.txt","w");
+    FILE *op_lattice = fopen("op_text/t4_temp_lattice.xyz","w");
 
     FILE *ip_lattice = fopen("op_text/energy_evol_lattice.xyz","r");
     
