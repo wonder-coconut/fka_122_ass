@@ -24,4 +24,22 @@ Execution format:
 ./H2 2
 ```
 
+
+#### Task 2, subtask 1
+Similar to T1S1, this is a sampling subroutine, with the only difference of having an "unlikely" initial starting point. The syntax of execution is identical to T1S1.
+```
+./H2 3 <n samples> <delta value>
+```
+
+#### Task 2, subtask 2 & 3
+This part handles the statistical inefficiency calculations, and similar to T1S2 requires no parameters.
+
+Autocorrelation method:
+```
+./H2 4
+```
+Block averaging method:
+```
+./H2 5
+```
 The remainder of the project involves visualization by python, which I assume to be self-evident in their execution.

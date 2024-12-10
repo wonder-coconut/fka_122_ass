@@ -34,6 +34,7 @@ plt.savefig("../op_fig/mcmc_eqb_t2.png")
 file = open("../op_text/mcmc_energy_eqb_t2.txt","w")
 
 #length
+i += 100
 file.write(str(len(data[i:])) + '\n')
 
 for j in range(len(data[i:])):

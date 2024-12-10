@@ -89,16 +89,12 @@ void task2_sampling(int argc, char *argv[], gsl_rng *r)
     int accepted_iterations = 0;
     double energy = 0;
 
-    //init
-    for(i = 0; i < N; i++)
-        iteration = mcmc_displace_all(r1,r2,d,alpha,r);
-
     //mcmc sampling
     for(i = 0; i < N; i++)
     {
         iteration = mcmc_displace_all(r1,r2,d,alpha,r);
         fprintf(op_energy,"%f\n",iteration.energy);
-        if(i%100 == 0)
+        //if(i%100 == 0)
             fprintf(op_samples,"%f\t%f\t%f\t%f\t%f\t%f\n",r1[0],r1[1],r1[2],r2[0],r2[1],r2[2]);
         
         accepted_iterations += iteration.accepted;
@@ -112,7 +108,7 @@ void task2_sampling(int argc, char *argv[], gsl_rng *r)
 void task1_correlation()
 {
     //file input
-    FILE *samples = fopen("op_text/samples_t1.txt","r");
+    FILE *samples = fopen("op_text/samples.txt","r");
     //file output
     FILE *op_theta = fopen("op_text/theta_t1.txt","w");
     FILE *op_uniform = fopen("op_text/x_uniform_t1.txt","w");
@@ -148,7 +144,7 @@ void task1_correlation()
 void task1_sampling(int argc,char *argv[], gsl_rng *r)
 {
     //file output
-    FILE *samples = fopen("op_text/samples_t1.txt","w");
+    FILE *samples = fopen("op_text/samples.txt","w");
 
     int N = atoi(argv[2]);
     double d = atof(argv[3]);

@@ -5,7 +5,7 @@ from matplotlib import cm
 def prob(Z,r):
     return Z*Z*Z * 4*r*r * np.exp(-2*Z*r)
 
-data = open("../op_text/samples_t1.txt","r").read().split('\n')
+data = open("../op_text/samples.txt","r").read().split('\n')
 data.pop()
 n = int(data.pop(0))
 
