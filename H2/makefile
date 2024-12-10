@@ -25,7 +25,8 @@ OBJ = \
       obj/tools.o \
       obj/run.o \
 	  obj/trial_wave.o \
-	  obj/metropolis.o
+	  obj/metropolis.o \
+	  obj/inefficiency.o
 	  
 MAIN = \
        obj/main.o

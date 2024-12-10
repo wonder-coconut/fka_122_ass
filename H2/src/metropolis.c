@@ -6,6 +6,28 @@
 #include "mcmc_step.h"
 #include "trial_wave.h"
 
+double q_calc(double *r1_new, double *r2_new, double *r1, double *r2, double alpha)
+{
+
+    //new parameters
+    double m_r12_new = distance_between_vectors(r2_new,r1_new,3);
+
+    double m_r1_new = vector_norm(r1_new,3);
+    double m_r2_new = vector_norm(r2_new,3);
+
+    //original parameters
+    double m_r12 = distance_between_vectors(r2,r1,3);
+
+    double m_r1 = vector_norm(r1,3);
+    double m_r2 = vector_norm(r2,3);
+
+    double exp_param_new = (-2*m_r1_new) + (-2*m_r2_new) + (m_r12_new/(2 * (1 + alpha * m_r12_new)));
+    double exp_param = (-2*m_r1) + (-2*m_r2) + (m_r12/(2 * (1 + alpha * m_r12)));
+
+    double q_exp_param = 2*(exp_param_new - exp_param);
+    return exp(q_exp_param);
+}
+
 double pdf(double *r1, double *r2, double alpha)
 {
     double psi = trial_wave_function(r1, r2, alpha);
@@ -63,7 +85,9 @@ mcmc_step mcmc_displace_all(double *r1, double *r2, double d, double alpha, gsl_
     r2_new[2] = r2[2] + d * (gsl_rng_uniform(r) - 0.5);
 
     //acceptance rubric
-    double q = pdf(r1_new,r2_new, alpha)/pdf(r1,r2,alpha);
+    double q = q_calc(r1_new,r2_new,r1,r2,alpha);
+    //double q = pdf(r1_new,r2_new,alpha)/pdf(r1,r2,alpha);
+    //printf("q:\t%f\n",q);
     double epsilon = gsl_rng_uniform(r);
 
     if(q >= epsilon)

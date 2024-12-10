@@ -7,9 +7,109 @@
 #include "trial_wave.h"
 #include "metropolis.h"
 #include "mcmc_step.h"
+#include "inefficiency.h"
 
 
-void task1_correlation(int argc, char *argv[])
+void task2_block_avg_inefficiency()
+{
+    //energy samples input
+    FILE *ip_energy = fopen("op_text/mcmc_energy_eqb_t2.txt","r");
+    //block inefficiency output
+    FILE *op_blocks = fopen("op_text/block_avg_ineff_t2.txt","w");
+
+    //n samples
+    int n;
+    fscanf(ip_energy,"%d\n",&n);
+
+    double *data = (double *)malloc(n * sizeof(double));
+    //read data
+    int i;
+    for(i = 0; i < n ; i++)
+        fscanf(ip_energy,"%lf\n",&data[i]);
+    
+    double ineff = 0;
+    
+    //block averaging method of inefficiency calculation
+    for(int b = 2; b < 1000; b++)
+    {
+        ineff = block_average(data, n, b);
+        fprintf(op_blocks,"%f\n",ineff);
+    }
+
+    free(data);
+}
+
+void task2_autocorrelation_inefficiency()
+{
+    //energy samples input
+    FILE *ip_energy = fopen("op_text/mcmc_energy_eqb_t2.txt","r");
+    //block inefficiency output
+    FILE *op_autocorr = fopen("op_text/autocorrelation_ineff_t2.txt","w");
+
+    //n samples
+    int n;
+    fscanf(ip_energy,"%d\n",&n);
+
+    double *data = (double *)malloc(n * sizeof(double));
+    //read data
+    int i;
+    for(i = 0; i < n ; i++)
+        fscanf(ip_energy,"%lf\n",&data[i]);
+    
+    //mean bias
+    double f_mean = average(data,n);
+    for(i = 0; i < n ; i++)
+        data[i] -= f_mean;
+
+    //autocorrelation
+    for(i = 1; i < 200; i++)
+        fprintf(op_autocorr,"%f\n",autocorrelation(data,n,i));
+
+    free(data);
+
+}
+
+void task2_sampling(int argc, char *argv[], gsl_rng *r)
+{
+    //file output
+    FILE *op_energy = fopen("op_text/mcmc_energy_t2.txt","w");
+    FILE *op_samples = fopen("op_text/samples.txt","w");
+
+    int N = atoi(argv[2]);
+    double d = atof(argv[3]);
+
+    //initial states
+    double r1[] = {-10000,10000,-10000};
+    double r2[] = {10000,-10000,10000};
+    double alpha = 0.1;
+
+    mcmc_step iteration;
+
+    int i;
+    int accepted_iterations = 0;
+    double energy = 0;
+
+    //init
+    for(i = 0; i < N; i++)
+        iteration = mcmc_displace_all(r1,r2,d,alpha,r);
+
+    //mcmc sampling
+    for(i = 0; i < N; i++)
+    {
+        iteration = mcmc_displace_all(r1,r2,d,alpha,r);
+        fprintf(op_energy,"%f\n",iteration.energy);
+        if(i%100 == 0)
+            fprintf(op_samples,"%f\t%f\t%f\t%f\t%f\t%f\n",r1[0],r1[1],r1[2],r2[0],r2[1],r2[2]);
+        
+        accepted_iterations += iteration.accepted;
+        energy += iteration.energy;
+    }
+
+    printf("Acceptance ratio:\t%f\n",accepted_iterations*1.0/N);
+    printf("Energy:\t\t%f\n",(energy/N));
+}
+
+void task1_correlation()
 {
     //file input
     FILE *samples = fopen("op_text/samples_t1.txt","r");
@@ -78,8 +178,8 @@ void task1_sampling(int argc,char *argv[], gsl_rng *r)
         iteration = mcmc_displace_all(r1,r2,d,alpha,r);
 
         fprintf(samples,"%f\t%f\t%f\t",r1[0],r1[1],r1[2]);
-        fprintf(samples,"%f\t%f\t%f\t",r2[0],r2[1],r2[2]);
-        
+        fprintf(samples,"%f\t%f\t%f\n",r2[0],r2[1],r2[2]);
+
         energy += iteration.energy;
         accepted_iterations += iteration.accepted;
     }
@@ -88,10 +188,7 @@ void task1_sampling(int argc,char *argv[], gsl_rng *r)
 }
 
 int
-run(
-    int argc,
-    char *argv[]
-   )
+run(int argc, char *argv[])
 {
     unsigned long epochs = (unsigned long) time (NULL); 
 
@@ -109,8 +206,14 @@ run(
     int choice = atoi(argv[1]);
     if(choice == 1)
         task1_sampling(argc,argv, r);
-    if(choice == 2)
-        task1_correlation(argc, argv);
+    else if(choice == 2)
+        task1_correlation();
+    else if(choice == 3)
+        task2_sampling(argc, argv, r);
+    else if(choice == 4)
+        task2_autocorrelation_inefficiency();
+    else if(choice == 5)
+        task2_block_avg_inefficiency();
 
     gsl_rng_free(r);
 
