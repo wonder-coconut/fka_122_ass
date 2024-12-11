@@ -57,9 +57,9 @@ double energy(double *r1, double *r2, double alpha)
     elementwise_subtraction(r21,r1,r2,3);
 
     //energy
-    double unit_r2_dot_r21 = dot_product(unit_r21,r21,3);
+    double unit_r21_dot_r21 = dot_product(unit_r21,r21,3);
 
-    double e_t1 = unit_r2_dot_r21/(m_r12 * (1+alpha*m_r12)*(1+alpha*m_r12));
+    double e_t1 = unit_r21_dot_r21/(m_r12 * (1+alpha*m_r12)*(1+alpha*m_r12));
     double e_t2 = 1/(m_r12 * (1+alpha*m_r12)*(1+alpha*m_r12)*(1+alpha*m_r12));
     double e_t3 = 0.25/((1+alpha*m_r12)*(1+alpha*m_r12)*(1+alpha*m_r12)*(1+alpha*m_r12));
     double e_t4 = 1/m_r12;
