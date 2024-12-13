@@ -5,6 +5,7 @@
 #include "tools.h"
 #include "mcmc_step.h"
 #include "trial_wave.h"
+#include "vmc.h"
 
 double q_calc(double *r1_new, double *r2_new, double *r1, double *r2, double alpha)
 {
@@ -28,11 +29,6 @@ double q_calc(double *r1_new, double *r2_new, double *r1, double *r2, double alp
     return exp(q_exp_param);
 }
 
-double pdf(double *r1, double *r2, double alpha)
-{
-    double psi = trial_wave_function(r1, r2, alpha);
-    return psi*psi;
-}
 
 double energy(double *r1, double *r2, double alpha)
 {
@@ -53,15 +49,17 @@ double energy(double *r1, double *r2, double alpha)
     normalize_vector(unit_r1,3);
 
     //init vectors
-    elementwise_subtraction(unit_r21,r1,r2,3);
+    elementwise_subtraction(unit_r21,unit_r1,unit_r2,3);
     elementwise_subtraction(r21,r1,r2,3);
 
     //energy
     double unit_r21_dot_r21 = dot_product(unit_r21,r21,3);
 
-    double e_t1 = unit_r21_dot_r21/(m_r12 * (1+alpha*m_r12)*(1+alpha*m_r12));
-    double e_t2 = 1/(m_r12 * (1+alpha*m_r12)*(1+alpha*m_r12)*(1+alpha*m_r12));
-    double e_t3 = 0.25/((1+alpha*m_r12)*(1+alpha*m_r12)*(1+alpha*m_r12)*(1+alpha*m_r12));
+    double one_alpha_m_r12 = 1 + alpha * m_r12;
+
+    double e_t1 = unit_r21_dot_r21/(m_r12 * (one_alpha_m_r12)*(one_alpha_m_r12));
+    double e_t2 = 1/(m_r12 * (one_alpha_m_r12)*(one_alpha_m_r12)*(one_alpha_m_r12));
+    double e_t3 = 0.25/((one_alpha_m_r12)*(one_alpha_m_r12)*(one_alpha_m_r12)*(one_alpha_m_r12));
     double e_t4 = 1/m_r12;
 
     return -4 + e_t1 - e_t2 - e_t3 +e_t4;
@@ -86,7 +84,6 @@ mcmc_step mcmc_displace_all(double *r1, double *r2, double d, double alpha, gsl_
 
     //acceptance rubric
     double q = q_calc(r1_new,r2_new,r1,r2,alpha);
-    //double q = pdf(r1_new,r2_new,alpha)/pdf(r1,r2,alpha);
     //printf("q:\t%f\n",q);
     double epsilon = gsl_rng_uniform(r);
 
@@ -105,8 +102,8 @@ mcmc_step mcmc_displace_all(double *r1, double *r2, double d, double alpha, gsl_
     else
         iteration.accepted = 0;
 
-    iteration.probability = pdf(r1,r2,alpha);
     iteration.energy = energy(r1,r2,alpha);
+    iteration.ln_psi_grad = ln_psi_gradient(r1,r2,alpha);
 
     free(r1_new);
     free(r2_new);

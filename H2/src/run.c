@@ -30,7 +30,7 @@ void task5(int argc, char *argv[], gsl_rng *r)
     int i;
     int eqb_limit = 1E5;
     double e = 0;
-    double hardcoded_alpha = 0.249966;
+    double alpha = atof(argv[4]);
 
     //init random positions
     r2[0] = (100*d) * (gsl_rng_uniform(r) - 0.5);
@@ -43,20 +43,20 @@ void task5(int argc, char *argv[], gsl_rng *r)
 
     //eqb init run
     for(i = 0 ; i < eqb_limit; i++)
-        iteration = mcmc_displace_all(r1,r2,d,hardcoded_alpha,r);
+        iteration = mcmc_displace_all(r1,r2,d,alpha,r);
         
     //sampling run
     for(i = 0; i < N; i++)
     {
         if(i%(N/100) == 0)
             printf("%d\n",(int)(i*100.0/N));
-        iteration = mcmc_displace_all(r1,r2,d,hardcoded_alpha,r);
+        iteration = mcmc_displace_all(r1,r2,d,alpha,r);
         e += iteration.energy;
     }
 
     //energy calculation
     e = e/N;
-    printf("%f\t%f\n",hardcoded_alpha,e);
+    printf("%f\t%f\n",alpha,e);
 
 } 
 
@@ -64,18 +64,13 @@ void task5(int argc, char *argv[], gsl_rng *r)
 //input format : ./H2 7 N   d   i_limit alpha_init  beta
 void task4(int argc, char *argv[], gsl_rng *r)
 {
-    //FILE output
-    //FILE *energy_alpha_t4 = fopen("op_text/energy_evol_alpha_t4.txt","w");
     //hard coded statistical inefficiency
     //double n_s = 36;
     //limits
     int N = atoi(argv[2]);
     double d = atof(argv[3]);
 
-    //energy array
-    double *energy = (double *)malloc(N * sizeof(double));
-    double *energy_grad = (double *)malloc(N * sizeof(double));
-
+    
     //initial states
     double r1[] = {0,0,0};
     double r2[] = {0,0,0};
@@ -87,22 +82,22 @@ void task4(int argc, char *argv[], gsl_rng *r)
     int i,p;
     int eqb_limit = 1E5;
     int p_limit = atoi(argv[4]);
-    double e = 0;
+    double energy = 0;
+    double ln_psi_grad = 0;
+    double ln_psi_grad_e = 0;
     double e_grad = 0;
-    //double e_err = 0;
-    //double sd = 0;
+
     double alpha_init = atof(argv[5]);
     double A = 1;
     double beta = atof(argv[6]);
 
+    //FILE output
+    char filename[256];
+    sprintf(filename, "op_text/vmc_energy_%.2f_t4.txt",beta);
+    FILE *vmc = fopen(filename,"w");
+
     alpha = alpha_init;
 
-    //init energy arr
-    for(i = 0; i < N; i++)
-    {
-        energy[i] = 0;
-        energy_grad[i] = 0;
-    }
 
     //iterating through different alpha values 
     for(p = 0; p < p_limit; p++)
@@ -126,22 +121,21 @@ void task4(int argc, char *argv[], gsl_rng *r)
         for(i = 0; i < N; i++)
         {
             iteration = mcmc_displace_all(r1,r2,d,alpha,r);
-            energy[i] = iteration.energy;
-            energy_grad[i] = energy_gradient(r1,r2,alpha);
+            energy += iteration.energy;
+            ln_psi_grad += iteration.ln_psi_grad;
+            ln_psi_grad_e += iteration.energy * iteration.ln_psi_grad;
         }
+        energy = energy/N;
+        ln_psi_grad = ln_psi_grad/N;
+        ln_psi_grad_e = ln_psi_grad_e/N;
 
-        //energy calculation
-        e = average(energy,N);
-        printf("%f\t%f\n",alpha,e);
+        e_grad = 2 * ((ln_psi_grad_e - (energy * ln_psi_grad)));
 
-        //gradient descent
-        e_grad = average(energy_grad,N);
-        printf("gradient expectation:\t%f\n",e_grad);
-        alpha = alpha_descent_one_step(alpha,e_grad,i,A,beta);
+        fprintf(vmc,"%f\t%f\t%f\n",alpha,energy,e_grad);
+        //printf("%f\t%f\t%f\n",alpha,energy,e_grad);
+        alpha = alpha_descent_one_step(alpha, e_grad, p+1, A, beta);
     }
 
-    free(energy);
-    free(energy_grad);
 }
 
 void task3(int argc, char *argv[], gsl_rng *r)
@@ -149,7 +143,7 @@ void task3(int argc, char *argv[], gsl_rng *r)
     //FILE output
     FILE *energy_alpha_t3 = fopen("op_text/energy_evol_alpha_t3.txt","w");
     //hard coded statistical inefficiency
-    double n_s = 36;
+    double n_s = 19;
     //limits
     int N = atoi(argv[2]);
     double d = atof(argv[3]);
@@ -178,7 +172,7 @@ void task3(int argc, char *argv[], gsl_rng *r)
         energy[i] = 0;
 
     //iterating through different alpha values 
-    for(alpha = alpha_ll; alpha <=  alpha_ul; alpha += 0.01)
+    for(alpha = alpha_ll; alpha <= alpha_ul; alpha += 0.0025)
     {
         //init random positions
         r2[0] = (100*d) * (gsl_rng_uniform(r) - 0.5);
@@ -205,7 +199,7 @@ void task3(int argc, char *argv[], gsl_rng *r)
         e = average(energy,N);
         //error calculation
         sd = standard_deviation(energy,N);
-        printf("%f\n",sd);
+        printf("%f\t%f\n",alpha,sd);
         e_err = n_s/N * (sd*sd);
         fprintf(energy_alpha_t3,"%f\t%f\t%.30f\n",alpha,e,e_err);
     }
@@ -233,7 +227,7 @@ void task2_block_avg_inefficiency()
     double ineff = 0;
     
     //block averaging method of inefficiency calculation
-    for(int b = 2; b < 1000; b++)
+    for(int b = 2; b < 600; b++)
     {
         ineff = block_average(data, N, b);
         fprintf(op_blocks,"%f\n",ineff);

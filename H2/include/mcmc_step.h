@@ -5,7 +5,7 @@
 
 typedef struct{
     double energy;
-    double probability;
+    double ln_psi_grad;
     int accepted;
 } mcmc_step;
 

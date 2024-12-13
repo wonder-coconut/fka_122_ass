@@ -42,4 +42,24 @@ Block averaging method:
 ```
 ./H2 5
 ```
+
+#### Task 3
+T3 takes the same arguments as T1, except here, the script runs for multiple alpha values
+
+```
+./H2 6 <n samples> <delta value>
+```
+
+#### Task 4
+T4 takes additional arguments for the maximum p value, the initial alpha value, and the beta parameter.
+
+```
+./H2 7 <n samples> <delta value> <p_limit> <alpha_init> <beta>
+```
+
+#### Task 5
+T5 is basically identical T1, and so are its parameters.
+```
+./H2 8 <n samples> <delta value>
+```
 The remainder of the project involves visualization by python, which I assume to be self-evident in their execution.

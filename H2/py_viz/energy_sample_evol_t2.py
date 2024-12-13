@@ -18,7 +18,7 @@ x = np.arange(0,len(data))
 
 plt.figure(figsize=(20,10))
 plt.scatter(x,data, s=1,alpha=0.05)
-plt.axvline(i,color='red',label = r'N_eq = ' + f'{i}')
+plt.axvline(i,color='black',label = r'N_eq = ' + f'{i}')
 plt.axhline(e_avg,color='red',label=r'E_avg = ' f"{e_avg}")
 
 plt.xlabel("Sample number")
@@ -34,7 +34,7 @@ plt.savefig("../op_fig/mcmc_eqb_t2.png")
 file = open("../op_text/mcmc_energy_eqb_t2.txt","w")
 
 #length
-i += 100
+i += 1000
 file.write(str(len(data[i:])) + '\n')
 
 for j in range(len(data[i:])):

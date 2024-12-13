@@ -41,6 +41,6 @@ plt.hist(r_res,bins=100,density=True, color='orange', label = 'Sampling distribu
 plt.legend(loc = 'upper right')
 plt.xlabel('Radial distance r')
 plt.ylabel('Radial distribution probability P(r)')
-plt.title(f'Comparison of Radial Distribution Probabilites (VMC Samples = {n})')
+plt.title(f'Comparison of Radial Distribution Probabilites (MCMC Samples = {n})')
 
 plt.savefig('../op_fig/radial_dist_prob_t1.png')
