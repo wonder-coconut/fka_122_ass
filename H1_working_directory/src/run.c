@@ -17,17 +17,18 @@
 #define AL_MASS 0.0027965852524259004
 #define GPA_SCALE 6.2415076486555486E-03
 
+
 void md_sim(int argc, char *argv[])
 {
-    //FILE *pos = fopen("op_text/pos_evol_t4_temp.txt","w");
-    FILE *energy = fopen("op_text/energy_evol_t3_temp.txt","w");
-    FILE *ip_lattice = fopen("op_text/t3_lattice.xyz","r"); //equlibrated lattice input
+    FILE *pos = fopen("op_text/pos_evol_md.txt","w");
+    //FILE *energy = fopen("op_text/energy_evol_md.txt","w");
+    FILE *ip_lattice = fopen("op_text/t4_temp_lattice.xyz","r"); //equlibrated lattice input
     
     double **positions = create_2D_array(N_ATOMS, 3);
     double **velocities = create_2D_array(N_ATOMS, 3);
     double **forces = create_2D_array(N_ATOMS, 3);
 
-    double kin_e = 0;
+    //double kin_e = 0;
     double pot_e = 0;
 
     double lp = 0;
@@ -54,17 +55,17 @@ void md_sim(int argc, char *argv[])
         
         //velocity verlet
         vv_one_step(forces, velocities, positions, &pot_e, NULL, timestep, N*lp, N_ATOMS, AL_MASS);
-        kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
+        //kin_e = calculate_kinetic_energy(velocities, AL_MASS, N_ATOMS);
 
         //energy
-        fprintf(energy,"%f\t%f\n",pot_e,kin_e);
+        //fprintf(energy,"%f\t%f\n",pot_e,kin_e);
         //particle positions
-        //if((int)(time/timestep) % 100 == 0)
-        //{
-        //    for(i = 0; i < N_ATOMS; i++)
-        //        fprintf(pos,"%f\t%f\t%f\t",positions[i][0],positions[i][1],positions[i][2]);
-        //    fprintf(pos,"\n");
-        //}
+        if((int)(time/timestep) % 100 == 0)
+        {
+            for(i = 0; i < N_ATOMS; i++)
+                fprintf(pos,"%f\t%f\t%f\t",positions[i][0],positions[i][1],positions[i][2]);
+            fprintf(pos,"\n");
+        }
     }
 
     destroy_2D_array(positions,N_ATOMS);
@@ -180,7 +181,7 @@ void task4(int argc, char *argv[])
     }
 
     //production run
-    for(double time = 0; time < max_time * 5; time += timestep)
+    for(double time = 0; time < max_time * 20; time += timestep)
     {
         if((int)(time/timestep) % 1000 == 0)
             printf("%f\n",time);
@@ -445,8 +446,6 @@ run(
         task4(argc, argv); //liquid state eqb
     else if(choice == 5)
         md_sim(argc, argv); //md sim
-    else if(choice == 6)
-        static_factor(argc, argv); //static factor calc
 
     gsl_rng_free(r);
 

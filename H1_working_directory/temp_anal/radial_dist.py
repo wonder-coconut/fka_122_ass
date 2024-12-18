@@ -1,75 +1,55 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#sim constants
-n_atoms = 256
 lp = 4.236854996336203
-
-#read and parse data
-data = open("anal_files/pos_evol_t4_temp.txt").read().split('\n')
-f_out = open("anal_files/bins.txt")
+n_atoms = 256
+N = 4
+L = N*lp
+V = L*L*L
+#file read
+data = open("anal_files/pos_evol_md copy.txt").read().split('\n')
 data.pop()
 for i in range(len(data)):
     data[i] = data[i].split('\t')
     data[i].pop()
-    data[i] = [float(item) for item in data[i]]
+    data[i] = [[float(data[i][j*3]),float(data[i][j*3+1]),float(data[i][j*3+2])] for j in range(n_atoms)]
 
 data = np.array(data)
-positions = []
+#bin width
+del_r = 0.032
+#k => max number of bins
+k_max = 250
+k = np.arange(1,k_max+1)
+#radial bins
+r_k = (k - 0.5) * del_r
+r_max = np.max(r_k)
+#histogram
+bin_counts = np.zeros(k_max)
 
-for i in range(len(data)):
-    temp = []
-    j = 0
-    while(j < 256*3):
-        temp.append([data[i][j],data[i][j+1],data[i][j+2]])
-        j += 3
-    positions.append(temp)
+#ideal density
+n_ideal = (n_atoms-1)/V * 4*np.pi/3 * (3*k*k - 3*k + 1)*del_r*del_r*del_r
 
-positions = np.array(positions)
+time = len(data)
+#histogram calc
 
-#simulation box characteristics setup
-L = 4 * lp
-V = L * L * L
+#time iteration
+for i in range(time):
+    print(i)
+    #particle 1 iteration
+    for j in range(n_atoms):
+        #particle 2 iteration
+        for k in range(j + 1, n_atoms):
+            distance = np.linalg.norm(data[i][j] - data[i][k])
+            #print(distance)
+            if(distance < r_max):
+                #sort in histogram
+                bin_index = int(distance/r_max * k_max)
+                bin_counts[bin_index] += 1
 
-del_r = 0.1 #bin width
+np.savetxt("anal_files/bins.txt",bin_counts)
+np.savetxt("anal_files/r_k.txt",r_k)
+np.savetxt("anal_files/n_ideal.txt",n_ideal)
+np.savetxt("anal_files/time.txt",[time])
 
-k_max = (L)/del_r #maximum k => max distance
-k = np.arange(1,k_max)
-
-r_k = (k-0.5)*del_r #radius values => pairwise distance
-
-num_bins = len(k)
-bin_counts = np.zeros(num_bins) #bins for pairwise distance collection
-
-
-max_distance = L/2
-
-#ideal calc
-n_ideal = (255)/V * 4*np.pi/3 *(3*k*2 - 3*k + 1) * del_r**3 
-
-np.savetxt('anal_files/n_ideal.txt',n_ideal)
-np.savetxt('anal_files/r_k.txt',r_k)
-
-#distance_calc
-for t in range(len(data)):
-    print(t)
-    for i in range(256):
-        for j in range(i + 1, 256):
-            distance = np.linalg.norm(positions[t][i] - positions[t][j])
-            if(distance < max_distance):
-                bin_index = int(distance/max_distance*num_bins)
-                bin_counts[bin_index] += 2
-
-f_out.write("\n")
-f_out.write(str(bin_counts))
-
-#bin_counts = np.loadtxt('anal_files/bins.txt')
-
-bin_counts = np.array(bin_counts)
-bin_counts = bin_counts/999
-
-plt.title("Radial Distribution Function for T=973 K, P=1 bar")
-plt.xlabel("r (Å)")
-plt.ylabel("g(r)")
-plt.plot(r_k,bin_counts/n_ideal)
-plt.savefig("radial_dist.png")
+#plt.plot(r_k,bin_counts/(time*n_ideal))
+#plt.savefig('radial_dist.png')
