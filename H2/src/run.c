@@ -10,12 +10,21 @@
 #include "inefficiency.h"
 #include "vmc.h"
 
+void test()
+{
+    double r1[] = {0.1,0.1,0.3};
+    double r2[] = {0.1,0.2,0.1};
+    double alpha = 0.25;
+
+    printf("%f\n",energy(r1,r2,alpha));
+}
+
 void task5(int argc, char *argv[], gsl_rng *r)
 {
     //FILE output
-    //FILE *energy_alpha_t4 = fopen("op_text/energy_evol_alpha_t4.txt","w");
+    FILE *energy_alpha_t4 = fopen("op_text/energy_evol_alpha_t4.txt","w");
     //hard coded statistical inefficiency
-    //double n_s = 36;
+    //double n_s = 18;
     //limits
     int N = atoi(argv[2]);
     double d = atof(argv[3]);
@@ -28,7 +37,7 @@ void task5(int argc, char *argv[], gsl_rng *r)
 
     //simulation parameters
     int i;
-    int eqb_limit = 1E5;
+    int eqb_limit = 5000;
     double e = 0;
     double alpha = atof(argv[4]);
 
@@ -51,6 +60,7 @@ void task5(int argc, char *argv[], gsl_rng *r)
         if(i%(N/100) == 0)
             printf("%d\n",(int)(i*100.0/N));
         iteration = mcmc_displace_all(r1,r2,d,alpha,r);
+        fprintf(energy_alpha_t4,"%f\n",iteration.energy);
         e += iteration.energy;
     }
 
@@ -60,8 +70,7 @@ void task5(int argc, char *argv[], gsl_rng *r)
 
 } 
 
-
-//input format : ./H2 7 N   d   i_limit alpha_init  beta
+//input format : ./H2 7 N   d   p_limit alpha_init  beta
 void task4(int argc, char *argv[], gsl_rng *r)
 {
     //hard coded statistical inefficiency
@@ -98,7 +107,6 @@ void task4(int argc, char *argv[], gsl_rng *r)
 
     alpha = alpha_init;
 
-
     //iterating through different alpha values 
     for(p = 0; p < p_limit; p++)
     {
@@ -132,7 +140,7 @@ void task4(int argc, char *argv[], gsl_rng *r)
         e_grad = 2 * ((ln_psi_grad_e - (energy * ln_psi_grad)));
 
         fprintf(vmc,"%f\t%f\t%f\n",alpha,energy,e_grad);
-        //printf("%f\t%f\t%f\n",alpha,energy,e_grad);
+        printf("%f\t%f\t%f\n",alpha,energy,e_grad);
         alpha = alpha_descent_one_step(alpha, e_grad, p+1, A, beta);
     }
 
@@ -143,13 +151,16 @@ void task3(int argc, char *argv[], gsl_rng *r)
     //FILE output
     FILE *energy_alpha_t3 = fopen("op_text/energy_evol_alpha_t3.txt","w");
     //hard coded statistical inefficiency
-    double n_s = 19;
+    double n_s = 18;
     //limits
     int N = atoi(argv[2]);
     double d = atof(argv[3]);
+    int sampling_n = atoi(argv[4]);
 
     //energy array
     double *energy = (double *)malloc(N * sizeof(double));
+    double *e_mean = (double *)malloc(sampling_n * sizeof(double));
+    double *e_err = (double *)malloc(sampling_n * sizeof(double));
 
     //initial states
     double r1[] = {0,0,0};
@@ -160,10 +171,11 @@ void task3(int argc, char *argv[], gsl_rng *r)
 
     //simulation parameters
     int i;
-    int eqb_limit = 1E5;
+    int eqb_limit = 5000;
     double e = 0;
-    double e_err = 0;
+    double error = 0;
     double sd = 0;
+    double variance = 0;
     double alpha_ll = 0.05;
     double alpha_ul = 0.25;
 
@@ -174,43 +186,51 @@ void task3(int argc, char *argv[], gsl_rng *r)
     //iterating through different alpha values 
     for(alpha = alpha_ll; alpha <= alpha_ul; alpha += 0.0025)
     {
-        //init random positions
-        r2[0] = (100*d) * (gsl_rng_uniform(r) - 0.5);
-        r2[1] = (100*d) * (gsl_rng_uniform(r) - 0.5);
-        r2[2] = (100*d) * (gsl_rng_uniform(r) - 0.5);
-
-        r2[0] = (100*d) * (gsl_rng_uniform(r) - 0.5);
-        r2[1] = (100*d) * (gsl_rng_uniform(r) - 0.5);
-        r2[2] = (100*d) * (gsl_rng_uniform(r) - 0.5);
-
-        //energy calc using MCMC for alpha
-        //eqb init run
-        for(i = 0 ; i < eqb_limit; i++)
-            iteration = mcmc_displace_all(r1,r2,d,alpha,r);
-        
-        //sampling run
-        for(i = 0; i < N; i++)
+        //independent sampling runs
+        for(int k = 0; k < sampling_n; k++)
         {
-            iteration = mcmc_displace_all(r1,r2,d,alpha,r);
-            energy[i] = iteration.energy;
-        }
+            //init random positions
+            r2[0] = (100*d) * (gsl_rng_uniform(r) - 0.5);
+            r2[1] = (100*d) * (gsl_rng_uniform(r) - 0.5);
+            r2[2] = (100*d) * (gsl_rng_uniform(r) - 0.5);
 
-        //energy calculation
-        e = average(energy,N);
-        //error calculation
-        sd = standard_deviation(energy,N);
-        printf("%f\t%f\n",alpha,sd);
-        e_err = n_s/N * (sd*sd);
-        fprintf(energy_alpha_t3,"%f\t%f\t%.30f\n",alpha,e,e_err);
+            r2[0] = (100*d) * (gsl_rng_uniform(r) - 0.5);
+            r2[1] = (100*d) * (gsl_rng_uniform(r) - 0.5);
+            r2[2] = (100*d) * (gsl_rng_uniform(r) - 0.5);
+
+            //energy calc using MCMC for alpha
+            //eqb init run
+            for(i = 0 ; i < eqb_limit; i++)
+                iteration = mcmc_displace_all(r1,r2,d,alpha,r);
+            
+            for(i = 0; i < N; i++)
+            {
+                iteration = mcmc_displace_all(r1,r2,d,alpha,r);
+                energy[i] = iteration.energy;
+            }
+            //energy calculation
+            e_mean[k] = average(energy,N);
+            //error calculation
+            sd = standard_deviation(energy,N);
+            variance = sd * sd;
+            e_err[k] = n_s * variance/N;
+        }
+        
+        e = average(e_mean,sampling_n);
+        error = sqrt(average(e_err,sampling_n) * sampling_n) / sampling_n;
+        printf("%f\t%f\t%f\n",alpha,e,error);
+        fprintf(energy_alpha_t3,"%f\t%f\t%.30f\n",alpha,e,error);
     }
 
     free(energy);
+    free(e_mean);
+    free(e_err);
 }
 
 void task2_block_avg_inefficiency()
 {
     //energy samples input
-    FILE *ip_energy = fopen("op_text/mcmc_energy_eqb_t2.txt","r");
+    FILE *ip_energy = fopen("op_text/mcmc_energy_t2.txt","r");
     //block inefficiency output
     FILE *op_blocks = fopen("op_text/block_avg_ineff_t2.txt","w");
 
@@ -239,7 +259,7 @@ void task2_block_avg_inefficiency()
 void task2_autocorrelation_inefficiency()
 {
     //energy samples input
-    FILE *ip_energy = fopen("op_text/mcmc_energy_eqb_t2.txt","r");
+    FILE *ip_energy = fopen("op_text/mcmc_energy_t2.txt","r");
     //block inefficiency output
     FILE *op_autocorr = fopen("op_text/autocorrelation_ineff_t2.txt","w");
 
@@ -272,12 +292,13 @@ void task2_sampling(int argc, char *argv[], gsl_rng *r)
     FILE *op_energy = fopen("op_text/mcmc_energy_t2.txt","w");
     FILE *op_samples = fopen("op_text/samples.txt","w");
 
-    int N = atoi(argv[2]);
-    double d = atof(argv[3]);
+    int eqb_time = atoi(argv[2]);
+    int N = atoi(argv[3]);
+    double d = atof(argv[4]);
 
     //initial states
-    double r1[] = {-10000,10000,-10000};
-    double r2[] = {10000,-10000,10000};
+    double r1[] = {-100,100,-100};
+    double r2[] = {100,-100,100};
     double alpha = 0.1;
 
     mcmc_step iteration;
@@ -286,13 +307,52 @@ void task2_sampling(int argc, char *argv[], gsl_rng *r)
     int accepted_iterations = 0;
     double energy = 0;
 
+    //mcmc eqb
+    for(i = 0; i < eqb_time; i++)
+        iteration = mcmc_displace_all(r1,r2,d,alpha,r);
+
     //mcmc sampling
+    fprintf(op_energy,"%d\n",N);
+    fprintf(op_samples,"%d\n",N);
     for(i = 0; i < N; i++)
     {
         iteration = mcmc_displace_all(r1,r2,d,alpha,r);
         fprintf(op_energy,"%f\n",iteration.energy);
-        //if(i%100 == 0)
-            fprintf(op_samples,"%f\t%f\t%f\t%f\t%f\t%f\n",r1[0],r1[1],r1[2],r2[0],r2[1],r2[2]);
+        fprintf(op_samples,"%f\t%f\t%f\t%f\t%f\t%f\n",r1[0],r1[1],r1[2],r2[0],r2[1],r2[2]);
+        
+        accepted_iterations += iteration.accepted;
+        energy += iteration.energy;
+    }
+
+    printf("Acceptance ratio:\t%f\n",accepted_iterations*1.0/N);
+    printf("Energy:\t\t%f\n",(energy/N));
+}
+
+void task2_eqb(int argc, char *argv[], gsl_rng *r)
+{
+    //file output
+    FILE *op_energy = fopen("op_text/mcmc_energy_t2.txt","w");
+    //FILE *op_samples = fopen("op_text/samples.txt","w");
+
+    int N = atoi(argv[2]);
+    double d = atof(argv[3]);
+
+    //initial states
+    double r1[] = {-100,100,-100};
+    double r2[] = {100,-100,100};
+    double alpha = 0.1;
+
+    mcmc_step iteration;
+
+    int i;
+    int accepted_iterations = 0;
+    double energy = 0;
+
+    //mcmc equilibration
+    for(i = 0; i < N; i++)
+    {
+        iteration = mcmc_displace_all(r1,r2,d,alpha,r);
+        fprintf(op_energy,"%f\n",iteration.energy);
         
         accepted_iterations += iteration.accepted;
         energy += iteration.energy;
@@ -402,17 +462,21 @@ run(int argc, char *argv[])
     else if(choice == 2)
         task1_correlation();
     else if(choice == 3)
-        task2_sampling(argc, argv, r);
+        task2_eqb(argc,argv,r);
     else if(choice == 4)
-        task2_autocorrelation_inefficiency();
+        task2_sampling(argc, argv, r);
     else if(choice == 5)
-        task2_block_avg_inefficiency();
+        task2_autocorrelation_inefficiency();
     else if(choice == 6)
-        task3(argc, argv, r);
+        task2_block_avg_inefficiency();
     else if(choice == 7)
-        task4(argc, argv, r);
+        task3(argc, argv, r);
     else if(choice == 8)
+        task4(argc, argv, r);
+    else if(choice == 9)
         task5(argc, argv, r);
+    else if(choice == 10)
+        test();
 
     gsl_rng_free(r);
 

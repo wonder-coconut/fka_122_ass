@@ -30,6 +30,9 @@ p2 = prob(27/16,x) #z = 27/16
 
 #plotting the two z cases
 
+plt.rc('xtick',labelsize=18)
+plt.rc('ytick',labelsize=18)
+
 plt.figure(figsize=(8,6))
 
 plt.plot(x,p1, label = 'Z = 2')
@@ -38,9 +41,9 @@ plt.plot(x,p2,color='red', label = 'Z = 27/16')
 #sample distribution as a histogram
 r_res = np.concatenate((r1,r2))
 plt.hist(r_res,bins=100,density=True, color='orange', label = 'Sampling distribution')
-plt.legend(loc = 'upper right')
-plt.xlabel('Radial distance r')
-plt.ylabel('Radial distribution probability P(r)')
-plt.title(f'Comparison of Radial Distribution Probabilites (MCMC Samples = {n})')
+plt.legend(loc = 'upper right',fontsize='18')
+plt.xlabel(r'Radial distance r ($a_0$)',fontsize='18') #bohr radius
+plt.ylabel('Radial distribution probability P(r)',fontsize='18')
+plt.title(f'Comparison of Radial Distribution Probabilites\n(MCMC Samples={n})',fontsize='20')
 
 plt.savefig('../op_fig/radial_dist_prob_t1.png')

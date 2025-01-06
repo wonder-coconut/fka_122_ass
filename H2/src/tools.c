@@ -191,12 +191,15 @@ standard_deviation(
                   )
 {
     double mean = average(v1,len);
+    double sum = 0;
     double variance = 0;
 
     for(int i = 0; i < len; i++)
-        variance += (v1[i] - mean) * (v1[i] - mean);
+        sum += (v1[i] * v1[i]);
     
-    return sqrt(variance/len);
+    double mean_square = sum/len;
+    variance = mean_square - mean*mean;
+    return sqrt(variance);
 }
 
 double

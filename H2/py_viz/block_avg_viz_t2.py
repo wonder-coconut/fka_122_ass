@@ -22,14 +22,17 @@ params[2] = res[0][2]
 y = exp_decay(x,params[0],params[1],params[2])
 y_res = max(y)
 
+plt.rc('xtick',labelsize=12)
+plt.rc('ytick',labelsize=12)
+
 plt.scatter(x,data,color ='black',s=1)
 plt.plot(x,y,color='red',label='Exponential decay fit')
-plt.axhline(y_res,label=f'Convergence at {y_res}')
+plt.axhline(y_res,label=f'Convergence at {y_res:.4f}')
 
-plt.legend(loc='lower right')
-plt.xlabel('Block size')
-plt.ylabel('Statistical Inefficiency')
-plt.title('Block Averaged Statistical Inefficiency evolution')
+plt.legend(loc='lower right', fontsize='15')
+plt.xlabel('Block size', fontsize='18')
+plt.ylabel('Statistical Inefficiency', fontsize='18')
+plt.title('Statistical Inefficiency:\nBlock Averaging Method', fontsize='19')
 
 plt.savefig('../op_fig/block_avg_t2.png')
 #plt.show()

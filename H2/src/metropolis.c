@@ -32,6 +32,7 @@ double q_calc(double *r1_new, double *r2_new, double *r1, double *r2, double alp
 
 double energy(double *r1, double *r2, double alpha)
 {
+    double zero_vector[] = {0,0,0};
     double unit_r1[3];
     double unit_r2[3];
 
@@ -45,8 +46,16 @@ double energy(double *r1, double *r2, double alpha)
     addition_with_constant(unit_r2, r2, 0, 3);
 
     //unit position vecotr
-    normalize_vector(unit_r1,3);
-    normalize_vector(unit_r1,3);
+    if(distance_between_vectors(r1,zero_vector,3) == 0)
+        elementwise_addition(unit_r1,r1,zero_vector,3);
+    else
+        normalize_vector(unit_r1,3);
+
+    if(distance_between_vectors(r2,zero_vector,3) == 0)
+        elementwise_addition(unit_r2,r2,zero_vector,3);
+    else
+        normalize_vector(unit_r2,3);
+
 
     //init vectors
     elementwise_subtraction(unit_r21,unit_r1,unit_r2,3);

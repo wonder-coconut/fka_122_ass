@@ -27,14 +27,17 @@ y = exp_decay(x,params[0],params[1],params[2])
 y_res = min(y, key=lambda x:abs(x - 0.135))
 x_res = np.where(y == y_res)[0][0]
 
+plt.rc('xtick',labelsize=12)
+plt.rc('ytick',labelsize=12)
+
 plt.plot(x,data)
 plt.plot(x,y)
-plt.axhline(y_res,color='red',label = f'Autocorrelation = 0.135 for k = {x_res}')
+plt.axhline(y_res,color='red',label = f'Autocorrelation = 0.135\nfor k = {x_res}')
 plt.axvline(x_res,color='red')
 
-plt.xlabel('K')
-plt.ylabel(r'Autocorrelation($r_k$)')
-plt.title('Statistical Inefficiency: Autocorrelation method')
-plt.legend(loc='upper right')
+plt.xlabel('K',fontsize='18')
+plt.ylabel(r'Autocorrelation($r_k$)',fontsize='18')
+plt.title('Statistical Inefficiency:\nAutocorrelation method',fontsize='19')
+plt.legend(loc='upper right',fontsize='15')
 
 plt.savefig('../op_fig/stat_ineff_t2.png')
